@@ -7,39 +7,42 @@ import "os"
 import "strings"
 import "time"
 
-func otherMode(currentMode string) string {
-	if currentMode == "w" {
-		return "b"
-	}
-	return "w"
+type TimeModeID string
+
+const (
+	WorkID TimeModeID = "w"
+	BreakID = "b"
+)
+
+type TimeMode struct {
+	id TimeModeID
+	message string
 }
 
-func modeName(currentMode string) string {
-	if currentMode == "w" {
-		return "Work!"
+var (
+	Work = TimeMode{id: WorkID, message: "Work!"}
+	Break = TimeMode{id: BreakID, message: "Take a break."}
+)
+
+func (mode TimeMode) oppositeMode() TimeMode {
+	if mode == Work {
+		return Break
 	}
-	return "Take a break."
+	return Work
 }
 
-func isOtherMode(currentMode, input string) bool {
-	if currentMode == "w" {
-		return input == "b"
-	}
-	return input == "w"
-}
-
-func printInputOptions(currentMode string) {
+func printInputOptions(currentMode TimeMode) {
 	fmt.Println(" Options:")
-	if currentMode == "b" {
+	if currentMode == Break {
 		fmt.Println("  [w]ork")
-	} else if currentMode == "w" {
+	} else if currentMode == Work {
 		fmt.Println("  [b]reak")
 	}
 	fmt.Println("  [q]uit")
 }
 
-func runTimer(currentMode string) bool {
-	fmt.Println(modeName(currentMode))
+func runTimer(currentMode TimeMode) bool {
+	fmt.Println(currentMode.message)
 
 	stdinCh := make(chan string)
 	go func(ch chan string) {
@@ -71,7 +74,7 @@ func runTimer(currentMode string) bool {
 				return false
 			} else {
 				stdin = strings.TrimSpace(stdin)
-				if isOtherMode(currentMode, stdin) {
+				if stdin == string(currentMode.oppositeMode().id) {
 					return true
 				} else if stdin == "q" {
 					return false
@@ -84,12 +87,12 @@ func runTimer(currentMode string) bool {
 }
 
 func main() {
-	mode := "w"
+	mode := Work
 	for {
 		keepGoing := runTimer(mode)
 		if !keepGoing {
 			break
 		}
-		mode = otherMode(mode)
+		mode = mode.oppositeMode()
 	}
 }
