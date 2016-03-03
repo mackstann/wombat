@@ -1,6 +1,5 @@
 package main
 
-
 import "bufio"
 import "fmt"
 import "os"
@@ -10,17 +9,17 @@ import "time"
 type TimeModeID string
 
 const (
-	WorkID TimeModeID = "w"
-	BreakID = "b"
+	WorkID  TimeModeID = "w"
+	BreakID            = "b"
 )
 
 type TimeMode struct {
-	id TimeModeID
+	id      TimeModeID
 	message string
 }
 
 var (
-	Work = TimeMode{id: WorkID, message: "Work!"}
+	Work  = TimeMode{id: WorkID, message: "Work!"}
 	Break = TimeMode{id: BreakID, message: "Take a break."}
 )
 
@@ -62,7 +61,7 @@ func runTimer(currentMode TimeMode) bool {
 	start := time.Now()
 	for {
 		select {
-		case <- ticker.C:
+		case <-ticker.C:
 			now := time.Now()
 			elapsed := now.Sub(start)
 			minutes := int(elapsed.Minutes())
