@@ -40,22 +40,8 @@ func printInputOptions(currentMode TimeMode) {
 	fmt.Println("  [q]uit")
 }
 
-func runTimer(currentMode TimeMode) bool {
+func runTimer(stdinCh chan string, currentMode TimeMode) bool {
 	fmt.Println(currentMode.message)
-
-	stdinCh := make(chan string)
-	go func(ch chan string) {
-		reader := bufio.NewReader(os.Stdin)
-		for {
-			s, err := reader.ReadString('\n')
-			if err != nil {
-				// io.EOF and other errors
-				close(ch)
-				return
-			}
-			ch <- s
-		}
-	}(stdinCh)
 
 	ticker := time.NewTicker(time.Second)
 	start := time.Now()
@@ -86,9 +72,23 @@ func runTimer(currentMode TimeMode) bool {
 }
 
 func main() {
+	stdinCh := make(chan string)
+	go func(ch chan string) {
+		reader := bufio.NewReader(os.Stdin)
+		for {
+			s, err := reader.ReadString('\n')
+			if err != nil {
+				// io.EOF and other errors
+				close(ch)
+				return
+			}
+			ch <- s
+		}
+	}(stdinCh)
+
 	mode := Work
 	for {
-		keepGoing := runTimer(mode)
+		keepGoing := runTimer(stdinCh, mode)
 		if !keepGoing {
 			break
 		}
